@@ -19,15 +19,16 @@ public class Chinczyk {
 
         boolean stillPlaying = true;
 
-        while(stillPlaying) {
+        while (stillPlaying) {
 
-            System.out.println("Tura gracza " + (char)turn);
+            System.out.println("Tura gracza " + (char) turn);
             int rolled = rollTheDice();
-            if(!playerPawnExists() && rolled != 6) {
+            if (!playerPawnExists() && rolled != 6) { // zmiana tury, jeśli gracz nie może wykonać ruchu
                 passTheTurn();
                 continue;
             }
 
+            // wyświetlenie obecnego stanu planszy
             renderBoard(pawns);
 
             int distance = 0;
@@ -35,22 +36,23 @@ public class Chinczyk {
             boolean willMove = true;
             boolean multipleRoll = false;
 
-            while(rolled == 6 || invalid || multipleRoll) {
+            // pętla powtarza wybór akcji i sumuje pola do przejścia w przypadku losowania szóstek
+            while (rolled == 6 || invalid || multipleRoll) {
                 invalid = false;
-                switch(getSixChoice()) {
+                switch (getSixChoice()) {
                     case 1:
                         multipleRoll = true;
                         willMove = false;
                         distance += rolled;
 
                         rolled = rollTheDice();
-                        if(rolled != 6) {
+                        if (rolled != 6) {
                             willMove = true;
                             multipleRoll = false;
                         }
                         break;
                     case 2:
-                        if(canMoveOut()) {
+                        if (canMoveOut()) {
                             moveOut();
                             rolled = 0;
                             multipleRoll = false;
@@ -72,7 +74,8 @@ public class Chinczyk {
                         break;
                 }
             }
-            if(willMove) {
+            // mechanizm poruszenia pionkiem
+            if (willMove) {
                 distance += rolled;
                 rolled = 0;
 
@@ -81,9 +84,9 @@ public class Chinczyk {
                     index = getMoveIndex();
                 } while(!playerPawnExists(index));
 
-                for(int i=0; i<pawns.length; i++) {
-                    if(pawns[i][0] == turn && pawns[i][1] == index) {
-                        if(canHome(index, distance)) {
+                for (int i=0; i<pawns.length; i++) {
+                    if (pawns[i][0] == turn && pawns[i][1] == index) {
+                        if (canHome(index, distance)) {
                             addToHome();
                             pawns[i] = new int[]{0, 0};
                             break;
@@ -95,7 +98,8 @@ public class Chinczyk {
                     }
                 }
             }
-            if(isAWinner()) {
+
+            if (isAWinner()) {
                 stillPlaying = false;
                 System.out.println("Gracz " + (char)turn + " wygrywa!");
             }
@@ -104,7 +108,9 @@ public class Chinczyk {
     }
 
 
-    // do testów
+    // metoda do testów
+    // scores to wyniki następnych losowań
+    // toMove to wybory pola na planszy do przesunięcia
     public static void start(int players, int[][] pawns, int[] scores, int[] toMove) {
 
         initBases(players);
@@ -112,11 +118,11 @@ public class Chinczyk {
 
         boolean stillPlaying = true;
         int n=0;
-        while(stillPlaying && n<scores.length && n<toMove.length) {
+        while (stillPlaying && n<scores.length && n<toMove.length) {
 
             System.out.println("Tura gracza " + (char)turn);
             int rolled = scores[n];
-            if(!playerPawnExists() && rolled != 6) {
+            if (!playerPawnExists() && rolled != 6) {
                 passTheTurn();
                 continue;
             }
@@ -130,9 +136,9 @@ public class Chinczyk {
 
             int index = toMove[n];
 
-            for(int i=0; i<pawns.length; i++) {
-                if(pawns[i][0] == turn && pawns[i][1] == index) {
-                    if(canHome(index, distance)) {
+            for (int i=0; i<pawns.length; i++) {
+                if (pawns[i][0] == turn && pawns[i][1] == index) {
+                    if (canHome(index, distance)) {
                         addToHome();
                         pawns[i] = new int[]{0, 0};
                         break;
@@ -143,10 +149,12 @@ public class Chinczyk {
                     break;
                 }
             }
-            if(isAWinner()) {
+
+            if (isAWinner()) {
                 stillPlaying = false;
                 System.out.println("Gracz " + (char)turn + " wygrywa!");
             }
+
             passTheTurn();
             n++;
         }
@@ -157,9 +165,9 @@ public class Chinczyk {
     public static boolean canHome(int pos, int dist) {
         int home = (turn - 'a') * 10;
 
-        while(dist > 0) {
+        while (dist > 0) {
             pos = (pos + 1) % 40;
-            if(pos == home) return true;
+            if (pos == home) return true;
             dist--;
         }
         return false;
@@ -185,36 +193,37 @@ public class Chinczyk {
                     "2: wprowadź swój pionek na mapę\n" +
                     "3: porusz swoim pionkiem\n");
             value = sc.nextInt();
-        } while(value < 1 || value > 3);
+        } while (value < 1 || value > 3);
         return value;
     }
 
     public static int rollTheDice() {
-        int result = (int)(Math.random()*2+5); //*6+1
+        int result = (int)(Math.random()*6+1); // przedział [1,6]
         System.out.println("Wylosowano: " + result);
         return result;
     }
 
     public static void passTheTurn() {
         int var = turn + 1;
-        if(var > 'a' + players - 1)
+        if (var > 'a' + players - 1)
             turn = 'a';
         else turn = var;
     }
 
     public static boolean canMoveOut() {
-        for(int i=0; i<bases[turn - 'a'].length; i++) {
-            if(bases[turn - 'a'][i] != 0) return true;
+        for (int i=0; i<bases[turn - 'a'].length; i++) {
+            if (bases[turn - 'a'][i] != 0) return true;
         }
+
         return false;
     }
 
     public static void moveOut() {
-        for(int i=0; i<bases[turn - 'a'].length; i++) {
-            if(bases[turn - 'a'][i] != ' ') {
+        for (int i=0; i<bases[turn - 'a'].length; i++) {
+            if (bases[turn - 'a'][i] != ' ') {
                 bases[turn - 'a'][i] = ' ';
-                for(int j=0; j<pawns.length; j++) {
-                    if(pawns[j][0] == 0) {
+                for (int j=0; j<pawns.length; j++) {
+                    if (pawns[j][0] == 0) {
                         pawns[j] = new int[]{turn, (turn - 'a') * 10};
                         break;
                     }
@@ -231,30 +240,32 @@ public class Chinczyk {
             System.out.println("Wybierz pionek do przesuniecia: ");
             index = sc.nextInt();
         } while (index < 0 || index > 39);
+
         return index;
     }
 
     public static boolean playerPawnExists(int index) {
-        for(int i=0; i<pawns.length; i++) {
-            if(pawns[i][0] == turn) {
-                    if(pawns[i][1] == index)
-                        return true;
+        for (int[] pawn : pawns) {
+            if (pawn[0] == turn) {
+                if (pawn[1] == index)
+                    return true;
             }
         }
+
         return false;
     }
 
     public static boolean playerPawnExists() {
-        for(int i=0; i<pawns.length; i++)
-            if(pawns[i][0] == turn)
+        for (int[] pawn : pawns)
+            if (pawn[0] == turn)
                 return true;
+
         return false;
     }
 
     public static void captureAll(int destination) {
-
-        for(int i=0; i<pawns.length; i++) {
-            if(pawns[i][1] == destination && pawns[i][0] != 0) {
+        for (int i=0; i<pawns.length; i++) {
+            if (pawns[i][1] == destination && pawns[i][0] != 0) {
                 int color = pawns[i][0];
                 addToBase(color);
                 System.out.println("Bicie!");
@@ -264,8 +275,8 @@ public class Chinczyk {
     }
 
     public static void addToBase(int color) {
-        for(int i=0; i<4; i++) {
-            if(bases[color - 'a'][i] == ' ') {
+        for (int i=0; i<4; i++) {
+            if (bases[color - 'a'][i] == ' ') {
                 bases[color - 'a'][i] = color;
                 return;
             }
@@ -273,8 +284,8 @@ public class Chinczyk {
     }
 
     public static void addToHome() {
-        for(int i=0; i<4; i++) {
-            if(won[turn - 'a'][i] == ' ') {
+        for (int i=0; i<4; i++) {
+            if (won[turn - 'a'][i] == ' ') {
                 won[turn - 'a'][i] = turn;
                 return;
             }
@@ -282,10 +293,11 @@ public class Chinczyk {
     }
 
     public static boolean isAWinner() {
-        for(int i=0; i<won[turn - 'a'].length; i++) {
-            if(won[turn - 'a'][i] == ' ')
+        for (int i=0; i<won[turn - 'a'].length; i++) {
+            if (won[turn - 'a'][i] == ' ')
                 return false;
         }
+
         return true;
     }
 
@@ -338,17 +350,16 @@ public class Chinczyk {
                 {15, 6, won[1][3]}, {17, 6, won[1][2]}, {19, 6, won[1][1]}, {21, 6, won[1][0]},
         };
 
-        for(int y=0; y<13; y++) for (int x=0; x<27; x++) board[y][x] = ' ';
+        for (int y=0; y<13; y++) for (int x=0; x<27; x++) board[y][x] = ' ';
 
-        for(int i=0; i<helpers.length; i++) board[ helpers[i][1] ][ helpers[i][0] ] = (char) helpers[i][2];
-        for(int i=0; i<homes.length; i++) board[ homes[i][1] ][ homes[i][0] ] = (char) homes[i][2];
-        for(int i=0; i<winners.length; i++) board[ winners[i][1] ][ winners[i][0] ] = (char) winners[i][2];
+        for (int[] helper : helpers) board[helper[1]][helper[0]] = (char) helper[2];
+        for (int[] home : homes) board[home[1]][home[0]] = (char) home[2];
+        for (int[] winner : winners) board[winner[1]][winner[0]] = (char) winner[2];
 
-        for(int i=0; i<40; i++)
-        {
+        for (int i=0; i<40; i++) {
             char toPrint = 'x';
-            for(int j=0; j<16; j++) {
-                if(pawns[j][0] != 0 && pawns[j][1] == i) {
+            for (int j=0; j<16; j++) {
+                if (pawns[j][0] != 0 && pawns[j][1] == i) {
                     toPrint = (char) pawns[j][0];
                     break;
                 }
@@ -356,13 +367,13 @@ public class Chinczyk {
             board[ fields[i][1] ][ fields[i][0] ] = toPrint;
         }
 
-        for(int y = 0; y < 13; y++) System.out.println(new String(board[y]));
+        for (int y = 0; y < 13; y++) System.out.println(new String(board[y]));
     }
 
     public static void initBases(int players) {
-        for(int i=0; i<4; i++) {
-            for(int j=0; j<4; j++) {
-                if(i > players-1)
+        for (int i=0; i<4; i++) {
+            for (int j=0; j<4; j++) {
+                if (i > players-1)
                     bases[i][j] = ' ';
                 else
                     bases[i][j] = 'a' + i;
@@ -370,9 +381,9 @@ public class Chinczyk {
         }
     }
     public static void initWon(int players) {
-        for(int i=0; i<won.length; i++) {
+        for (int i=0; i<won.length; i++) {
             won[i][0] = 'a' + i;
-            for(int j=0; j<won[i].length; j++) {
+            for (int j=0; j<won[i].length; j++) {
                 won[i][j] = ' ';
             }
         }
